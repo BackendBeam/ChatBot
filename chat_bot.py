@@ -9,20 +9,34 @@ llm = OpenAI(
     base_url='https://api.groq.com/openai/v1'
 )
 
-def bot(message):
-    response = llm.chat.completions.create(model='openai/gpt-oss-20b',
-                                messages=[{
-                                    'role':'user',
-                                    'content': message
-                                }])
-    return response.choices[0].message.content
-    
+messages = []
 
+def bot(message):
+    messages.append({
+                        'role':'user',
+                        'content': message
+                    })
+    response = llm.chat.completions.create(model='openai/gpt-oss-20b',
+                                messages=messages)
+    response_text = response.choices[0].message.content
+    messages.append({
+                        'role':'assistant',
+                        'content': response_text
+                    })
+    return response_text
+
+def chat():
+    while True:
+           user_input = input('Ask something(type "q" to terminate):').strip().lower()
+    
+           if user_input == 'q':
+               print('Good luck')
+               break
+           bot_answer = bot(user_input)
+           print(bot_answer)
 
 def main():
-    user_input = input('Ask something:')
-    bot_answer = bot(user_input)
-    print(bot_answer)
+    chat()
 
 if __name__ == '__main__':
     main()
