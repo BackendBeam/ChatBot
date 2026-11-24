@@ -1,5 +1,5 @@
 from urllib import response
-
+import time
 import dotenv
 import os
 import tiktoken
@@ -57,15 +57,35 @@ class ChatBot:
                             'content': message
                         })
         response = self.llm.chat.completions.create(model='openai/gpt-oss-20b',
-                                    messages=self.messages)
-        response_text = response.choices[0].message.content
+                                    messages=self.messages,
+                                    stream = True)
+        # response_text = response.choices[0].message.content
+        # self.messages.append({
+        #                     'role':'assistant',
+        #                     'content': response_text
+        #                 })
+        # self.input_tokens += response.usage.prompt_tokens
+        # self.output_tokens += response.usage.completion_tokens
+        # self.total_tokens += response.usage.total_tokens
+
+        response_text = ''
+        for chunk in response:
+            if chunk.choices:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    print(delta, end='', flush=True)
+                    response_text += delta
+                    time.sleep(0.05)  # Adjust the sleep time as needed for a smoother streaming effect
+            if chunk.usage:
+                self.input_tokens += chunk.usage.prompt_tokens
+                self.output_tokens += chunk.usage.completion_tokens
+                self.total_tokens += chunk.usage.total_tokens
+
+        print()  # Print a newline after the response is complete
         self.messages.append({
                             'role':'assistant',
                             'content': response_text
-                        })
-        self.input_tokens += response.usage.prompt_tokens
-        self.output_tokens += response.usage.completion_tokens
-        self.total_tokens += response.usage.total_tokens
+                        })    
         return response_text
 
 
@@ -90,8 +110,8 @@ class ChatBot:
             if self.total_tokens > 1000:
                 print(f'You have exceeded the total token limit. You have used {self.total_tokens} tokens. Please start a new session.')
                 break
-            bot_answer = self.bot(user_input)
-            print(bot_answer)
+            self.bot(user_input)
+            
 
     def report(self):
         for message in self.messages:
