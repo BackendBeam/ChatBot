@@ -84,6 +84,7 @@ class ChatBot:
         print(f'Input tokens: {self.input_tokens}')
         print(f'Output tokens: {self.output_tokens}')
         print(f'Consumed tokens: {self.total_tokens}')
+        print(f'Cost: ${(self.input_tokens * 0.01 + self.output_tokens * 0.05)/1000000}')
 
 def main():
     bot = ChatBot()
