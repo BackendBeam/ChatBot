@@ -4,6 +4,7 @@ import dotenv
 import os
 import tiktoken
 from openai import OpenAI
+from transformers import AutoTokenizer
 dotenv.load_dotenv()
 
 
@@ -69,7 +70,9 @@ class ChatBot:
 
 
     def chat(self):
-        encoding = tiktoken.get_encoding('cl100k_base')
+        #encoding = tiktoken.get_encoding('cl100k_base')
+        encoding = AutoTokenizer.from_pretrained("gpt2")
+        #encoding = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B")
         while True:
             user_input = input('Ask something(type "q" to terminate):').strip().lower()
             
@@ -78,9 +81,15 @@ class ChatBot:
                 break
 
             token_count = len(encoding.encode(user_input))
+            print(f'Your input has {token_count} tokens.')
+            
             if token_count > 10:
                 print(f'Your input is too long. It has {token_count} tokens, but the limit is 10 tokens. Try a shorter one, please.')
                 continue
+
+            if self.total_tokens > 1000:
+                print(f'You have exceeded the total token limit. You have used {self.total_tokens} tokens. Please start a new session.')
+                break
             bot_answer = self.bot(user_input)
             print(bot_answer)
 
