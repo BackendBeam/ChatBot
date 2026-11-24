@@ -1,3 +1,5 @@
+from urllib import response
+
 import dotenv
 import os
 from openai import OpenAI
@@ -44,6 +46,8 @@ class ChatBot:
             }
         ]
         self.total_tokens = 0
+        self.input_tokens = 0
+        self.output_tokens = 0
 
     def bot(self, message):
         self.messages.append({
@@ -57,7 +61,8 @@ class ChatBot:
                             'role':'assistant',
                             'content': response_text
                         })
-
+        self.input_tokens += response.usage.prompt_tokens
+        self.output_tokens += response.usage.completion_tokens
         self.total_tokens += response.usage.total_tokens
         return response_text
 
@@ -76,6 +81,8 @@ class ChatBot:
         for message in self.messages:
             print(message)
             print(f"{message['role']}: {message['content']}")
+        print(f'Input tokens: {self.input_tokens}')
+        print(f'Output tokens: {self.output_tokens}')
         print(f'Consumed tokens: {self.total_tokens}')
 
 def main():
